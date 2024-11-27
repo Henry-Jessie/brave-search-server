@@ -70,7 +70,6 @@ npm run build
 2. Click \"Edit Config\" to open the configuration file
 3. Add the following configuration:
 ```json
-{
     \"mcpServers\": {
         \"brave-search-server\": {
             \"command\": \"node\",
@@ -82,7 +81,6 @@ npm run build
             }
         }
     }
-}
 ```
 Note: Replace `/path/to/your` with the actual path to your server's build directory.
 
