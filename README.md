@@ -1,70 +1,91 @@
-# brave-search-server-tmp MCP Server
+A Model Context Protocol (MCP) server implementation that provides access to the Brave Search API with built-in proxy support. This server is specifically designed to work in environments where direct access to Brave's API might be restricted or unstable.
 
-A Model Context Protocol server
+## Introduction
 
-This is a TypeScript-based MCP server that implements a simple notes system. It demonstrates core MCP concepts by providing:
-
-- Resources representing text notes with URIs and metadata
-- Tools for creating new notes
-- Prompts for generating summaries of notes
+The Brave Search Server is part of the Model Context Protocol (MCP) ecosystem, which standardizes communication between model servers and clients. This implementation focuses on providing robust search capabilities through Brave's API while handling proxy requirements for reliable access.
 
 ## Features
 
-### Resources
-- List and access notes via `note://` URIs
-- Each note has a title, content and metadata
-- Plain text mime type for simple content access
+- Web search functionality using Brave Search API
+- Local business search with detailed information
+- Built-in proxy support for reliable API access
+- Rate limiting implementation (1 request/second, 15,000 requests/month)
+- Seamless integration with Claude desktop client
 
-### Tools
-- `create_note` - Create new text notes
-  - Takes title and content as required parameters
-  - Stores note in server state
+## Prerequisites
 
-### Prompts
-- `summarize_notes` - Generate a summary of all stored notes
-  - Includes all note contents as embedded resources
-  - Returns structured prompt for LLM summarization
+- Node.js (Latest LTS version recommended)
+- npm package manager
+- A running proxy server (default configuration expects proxy at http://127.0.0.1:7890)
+- Brave Search API key
+- Claude desktop client (for integration)
 
-## Development
+## Local Build Guide
 
-Install dependencies:
+1. Create a new server project using MCP's template:
 ```bash
-npm install
+npx @modelcontextprotocol/create-server brave-search-server
+cd brave-search-server
 ```
 
-Build the server:
+2. Install required dependencies:
+```bash
+# Install MCP SDK and networking dependencies
+npm install @modelcontextprotocol/sdk node-fetch@2 https-proxy-agent
+
+# Install TypeScript type definitions
+npm i --save-dev @types/node-fetch
+```
+
+3. Configure the proxy in `src/index.ts`. Add these imports at the top:
+```typescript
+import fetch from 'node-fetch';
+import { HttpsProxyAgent } from 'https-proxy-agent';
+
+// Configure your proxy URL
+const PROXY_URL = 'http://127.0.0.1:7890'
+const proxyAgent = new HttpsProxyAgent(PROXY_URL);
+```
+
+4. Modify all fetch requests to use the proxy agent. For each fetch call, add the agent configuration:
+```typescript
+const response = await fetch(url, {
+    headers: {
+        'Accept': 'application/json',
+        'Accept-Encoding': 'gzip',
+        'X-Subscription-Token': BRAVE_API_KEY
+    },
+    agent: proxyAgent  // Add this line to enable proxy
+});
+```
+
+5. Build the project:
 ```bash
 npm run build
 ```
 
-For development with auto-rebuild:
-```bash
-npm run watch
-```
+## Integration with Claude Desktop Client
 
-## Installation
-
-To use with Claude Desktop, add the server config:
-
-On MacOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
-On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
-
+1. Open Claude's Settings and navigate to the Developer tab
+2. Click \"Edit Config\" to open the configuration file
+3. Add the following configuration:
 ```json
 {
-  "mcpServers": {
-    "brave-search-server-tmp": {
-      "command": "/path/to/brave-search-server-tmp/build/index.js"
+    \"mcpServers\": {
+        \"brave-search-server\": {
+            \"command\": \"node\",
+            \"args\": [
+                \"/path/to/your/brave-search-server/build/index.js\"
+            ],
+            \"env\": {
+                \"BRAVE_API_KEY\": \"YOUR-API-KEY-HERE\"
+            }
+        }
     }
-  }
 }
 ```
+Note: Replace `/path/to/your` with the actual path to your server's build directory.
 
-### Debugging
+4. Restart Claude to apply the changes
 
-Since MCP servers communicate over stdio, debugging can be challenging. We recommend using the [MCP Inspector](https://github.com/modelcontextprotocol/inspector), which is available as a package script:
 
-```bash
-npm run inspector
-```
-
-The Inspector will provide a URL to access debugging tools in your browser.
