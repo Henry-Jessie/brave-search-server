@@ -70,17 +70,15 @@ npm run build
 2. Click \"Edit Config\" to open the configuration file
 3. Add the following configuration:
 ```json
-    \"mcpServers\": {
-        \"brave-search-server\": {
-            \"command\": \"node\",
-            \"args\": [
-                \"/path/to/your/brave-search-server/build/index.js\"
-            ],
-            \"env\": {
-                \"BRAVE_API_KEY\": \"YOUR-API-KEY-HERE\"
-            }
-        }
-    }
+"brave-search-server": {
+  "command": "node",
+  "args": [
+    "/path/to/your/brave-search-server/build/index.js"
+  ],
+  "env": {
+    "BRAVE_API_KEY": "YOUR-API-HERE"
+  }
+}
 ```
 Note: Replace `/path/to/your` with the actual path to your server's build directory.
 
